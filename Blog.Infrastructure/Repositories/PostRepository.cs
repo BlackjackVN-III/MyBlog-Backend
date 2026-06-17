@@ -22,8 +22,8 @@ namespace Blog.Infrastructure.Repositories
         public async Task<BlogPost> CreateBlogAsync(BlogPost blogPost)
         {
             await _context.Blogs.AddAsync(blogPost);
-            await _context.SaveChangesAsync();
             return blogPost;
+            
 
         }
 

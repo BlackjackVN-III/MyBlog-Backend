@@ -8,7 +8,7 @@ namespace Blog.Application.Interfaces
 {
     public interface IPostRepository
     {
-        Task<IEnumerable<BlogPost>> GetAllPostsAsync();
+        Task<List<BlogPost>> GetAllPostsAsync();
         Task<BlogPost?> GetBlogByIdAsync(Guid id);
         Task<BlogPost> CreateBlogAsync(BlogPost blogPost);
         Task<BlogPost?> UpdateBlogPostAsync(BlogPost blogPost, Guid id);

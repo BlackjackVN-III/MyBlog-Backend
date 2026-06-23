@@ -1,4 +1,4 @@
-﻿using Blog.Application.DTOs.Blog;
+using Blog.Application.DTOs.Blog;
 using Blog.Application.DTOs.User;
 using Blog.Domain.Entities;
 using System;
@@ -20,6 +20,7 @@ namespace Blog.Application.Mappings
                 Slug = blogPost.Slug,
                 Summary = blogPost.Summary,
                 Content = blogPost.Content,
+                CreatedAt = blogPost.CreateOn, // Gán thời gian tạo
                 // Nếu có Include thêm thông tin User thì map luôn
                 Author = blogPost.Author != null ? new UserDto
                 {
@@ -40,7 +41,17 @@ namespace Blog.Application.Mappings
             };
         }
 
+        public static BlogPost toBlogFromUpdateDto(this UpdateBlogRequestDto updateModel)
+        {
+            return new BlogPost
+            {
+                Title = updateModel.Title,
+                Slug = updateModel.Slug,
+                Summary = updateModel.Summary,
+                Content = updateModel.Content
+            };
+        }
 
-        
-}
+
+    }
 }

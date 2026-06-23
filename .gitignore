@@ -368,3 +368,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# AI Assistants and Editors directories (Gemini, Claude, Cursor, Copilot)
+.gemini/
+.claude/
+.cursor/
+.copilot/

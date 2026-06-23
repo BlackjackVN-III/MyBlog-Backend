@@ -14,7 +14,7 @@ namespace Blog.Infrastructure.Data
 
         }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<User> DomainUsers { get; set; }
         public DbSet<BlogPost> Blogs { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Comment> Comments { get; set; }

@@ -1,11 +1,12 @@
-﻿using Blog.Application.DTOs.Blog;
-using Blog.Application.Interfaces;
-using Blog.Domain.Entities;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using MediatR;
-using Blog.Application.Commands.Post.CreateBlog;
+﻿using Blog.Application.Commands.Post.CreateBlog;
+using Blog.Application.Commands.Post.DeleteBlog;
+using Blog.Application.Commands.Post.UpdateBlog;
+using Blog.Application.DTOs.Blog;
 using Blog.Application.Queries.GetBlog;
+using Blog.Application.Queries.GetBlogById;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Blog.API.Controllers
 {
@@ -13,12 +14,10 @@ namespace Blog.API.Controllers
     [ApiController]
     public class BlogsController : ControllerBase
     {
-        public readonly IPostRepository _postRepository;
         public readonly ISender _sender;
-        public BlogsController(IPostRepository postRepository, ISender sender)
+        public BlogsController(ISender sender)
         {
-             _postRepository = postRepository;
-             _sender = sender;
+            _sender = sender;
         }
 
         [HttpGet]
@@ -28,13 +27,35 @@ namespace Blog.API.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateBlogRequestDto dto,[FromRoute] Guid id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
-            
-            var result = await _sender.Send(new CreateBlogCommand(dto));
+            var result = await _sender.Send(new GetBlogByIdQuery(id));
             return Ok(result);
         }
 
-}
+        [Authorize] 
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateBlogRequestDto dto)
+        {
+
+            var blogId  = await _sender.Send(new CreateBlogCommand(dto));
+            return CreatedAtAction(nameof(GetById), new { id = blogId  }, blogId );
+        }
+
+        [Authorize] 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBlog([FromBody] UpdateBlogRequestDto updateDto, [FromRoute] Guid id)
+        {
+            var result = await _sender.Send(new UpdateBlogCommand(updateDto, id));
+            return Ok(result);
+        }
+        [Authorize] 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBlog([FromRoute] Guid id)
+        {
+            await _sender.Send(new DeleteBlogCommand(id));
+            return NoContent();
+        }
+    }
 }

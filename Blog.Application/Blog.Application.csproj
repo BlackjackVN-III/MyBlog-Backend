@@ -15,9 +15,4 @@
     <ProjectReference Include="..\Blog.Domain\Blog.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Commands\Post\DeleteBlog\" />
-    <Folder Include="Commands\Post\UpdateBlog\" />
-  </ItemGroup>
-
 </Project>

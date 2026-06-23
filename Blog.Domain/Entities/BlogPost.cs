@@ -15,7 +15,7 @@ namespace Blog.Domain.Entities
         public DateTime CreateOn { get; set; } = DateTime.Now;
         public DateTime? UpdateOn { get; set; }
         public Guid UserId { get; set; }
-        public User Author { get; set; }
+        public User Author { get; set; } = null!;
 
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public ICollection<PostTag> PostTags { get; set; } = new List<PostTag>();

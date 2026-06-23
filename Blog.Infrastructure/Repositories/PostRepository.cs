@@ -1,4 +1,4 @@
-﻿using Blog.Application.DTOs.Blog;
+using Blog.Application.DTOs.Blog;
 using Blog.Application.Interfaces;
 using Blog.Application.Mappings;
 using Blog.Domain.Entities;
@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace Blog.Infrastructure.Repositories
@@ -23,8 +24,6 @@ namespace Blog.Infrastructure.Repositories
         {
             await _context.Blogs.AddAsync(blogPost);
             return blogPost;
-            
-
         }
 
         public async Task DeleteBlogPostAsync(Guid id)
@@ -35,18 +34,20 @@ namespace Blog.Infrastructure.Repositories
             {
                 _context.Blogs.Remove(deleteBlog);
                 
+            } else {
+                throw new ArgumentNullException(nameof(deleteBlog));
             }
             
         }
 
-        public async Task<IEnumerable<BlogPost>> GetAllPostsAsync()
+        public async Task<List<BlogPost>> GetAllPostsAsync()
         {
-            return await _context.Blogs.ToListAsync();
+            return await _context.Blogs.Include(x => x.Author).ToListAsync();
         }
 
-        public async Task<BlogPost> GetBlogByIdAsync(Guid id)
+        public async Task<BlogPost?> GetBlogByIdAsync(Guid id)
         {
-            return await _context.Blogs.FirstOrDefaultAsync(x => x.Id == id);
+            return await _context.Blogs.Include(x => x.Author).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<BlogPost?> UpdateBlogPostAsync(BlogPost blogPost, Guid id)
@@ -54,7 +55,7 @@ namespace Blog.Infrastructure.Repositories
            var updateBlog = await GetBlogByIdAsync(id);
             if (updateBlog == null)
             {
-                return null;
+                throw new Exception("Blog post not found");
             }
             updateBlog.Title = blogPost.Title;
             updateBlog.Slug = blogPost.Slug;

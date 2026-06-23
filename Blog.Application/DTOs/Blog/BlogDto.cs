@@ -15,7 +15,7 @@ namespace Blog.Application.DTOs.Blog
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
 
-        public UserDto Author { get; set; } = null!;
+        public UserDto? Author { get; set; }
         public List<TagDto> Tags { get; set; } = new List<TagDto>();
     }
 }

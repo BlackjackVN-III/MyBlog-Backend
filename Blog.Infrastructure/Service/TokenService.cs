@@ -77,5 +77,26 @@ namespace Blog.Infrastructure.Service
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
+
+        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false, // Không cần validate audience lúc này
+                ValidateIssuer = false,   // Không cần validate issuer
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = _key,
+                ValidateLifetime = false // Bỏ qua kiểm tra hạn sử dụng để đọc claim từ token cũ
+            };
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new SecurityTokenException("Token không hợp lệ");
+            }
+            return principal;
+        }
     }
 }

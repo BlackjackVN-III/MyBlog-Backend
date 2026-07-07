@@ -8,11 +8,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Blog.Infrastructure.Service
 {
-    /// <summary>
-    /// Implementation của IAuthService - nằm ở tầng Infrastructure.
-    /// Đây là nơi DUY NHẤT sử dụng UserManager và AppUser.
-    /// Tầng Application (Handler) chỉ biết interface IAuthService.
-    /// </summary>
+
     public class AuthService : IAuthService
     {
         private readonly UserManager<AppUser> _userManager;
@@ -20,11 +16,7 @@ namespace Blog.Infrastructure.Service
         private readonly AppDbContext _context;
         private readonly IConfiguration _config;
 
-        public AuthService(
-            UserManager<AppUser> userManager,
-            ITokenService tokenService,
-            AppDbContext context,
-            IConfiguration config)
+        public AuthService(UserManager<AppUser> userManager,ITokenService tokenService,AppDbContext context,IConfiguration config)
         {
             _userManager = userManager;
             _tokenService = tokenService;
@@ -67,7 +59,7 @@ namespace Blog.Infrastructure.Service
             //    Dùng để lưu thông tin profile (Bio, Avatar) tách biệt khỏi Identity
             var domainUser = new User
             {
-                Id = appUser.Id,       // Lấy Id từ AppUser (đã được Identity sinh ra)
+                Id = appUser.Id,
                 Username = dto.UserName,
                 Email = dto.Email
             };
@@ -136,5 +128,63 @@ namespace Blog.Infrastructure.Service
                 RefreshToken = refreshToken
             };
         }
+
+        public async Task<AuthResultDto> RefreshTokenAsync(RefreshTokenRequestDto dto)
+        {
+            // 1. Trích xuất claims principal từ access token đã hết hạn
+            var principal = _tokenService.GetPrincipalFromExpiredToken(dto.AccessToken);
+            if (principal == null)
+            {
+                throw new Exception("Access Token không hợp lệ.");
+            }
+
+            // 2. Tìm UserId từ claim NameIdentifier / Sub
+            var userIdClaim = principal.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                throw new Exception("Token thiếu thông tin định danh.");
+            }
+
+            // 3. Tìm user trong DB
+            var appUser = await _userManager.FindByIdAsync(userId.ToString());
+            if (appUser == null || appUser.RefreshToken != dto.RefreshToken || appUser.RefreshTokenExpiry <= DateTime.UtcNow)
+            {
+                throw new Exception("Refresh Token không hợp lệ hoặc đã hết hạn.");
+            }
+
+            // 4. Sinh Access Token mới và Refresh Token mới
+            var roles = await _userManager.GetRolesAsync(appUser);
+            var newAccessToken = _tokenService.CreateToken(appUser.Id, appUser.Email!, appUser.UserName!, roles);
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+            // 5. Cập nhật Refresh Token mới vào DB
+            appUser.RefreshToken = newRefreshToken;
+            appUser.RefreshTokenExpiry = DateTime.UtcNow.AddDays(int.Parse(_config["JWT:RefreshTokenExpirationInDays"]!));
+            await _userManager.UpdateAsync(appUser);
+
+            return new AuthResultDto
+            {
+                UserName = appUser.UserName!,
+                Email = appUser.Email!,
+                Token = newAccessToken,
+                RefreshToken = newRefreshToken
+            };
+        }
+
+        public async Task<bool> LogoutAsync(Guid userId)
+        {
+            var appUser = await _userManager.FindByIdAsync(userId.ToString());
+            if (appUser == null)
+            {
+                return false;
+            }
+
+            // Hủy Refresh Token bằng cách gán null trong DB
+            appUser.RefreshToken = null;
+            appUser.RefreshTokenExpiry = null;
+            var result = await _userManager.UpdateAsync(appUser);
+            return result.Succeeded;
+        }
+
     }
 }

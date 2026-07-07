@@ -56,7 +56,7 @@ namespace Blog.API
             // THỨ TỰ RẤT QUAN TRỌNG:
             // 1. UseAuthentication() - Đọc JWT từ Header, xác thực, gắn User vào HttpContext
             // 2. UseAuthorization()  - Kiểm tra xem User đã xác thực có quyền truy cập endpoint không
-            // Nếu đảo thứ tự → [Authorize] sẽ KHÔNG BAO GIỜ hoạt động!
+            
             app.UseAuthentication();
             app.UseAuthorization();
 

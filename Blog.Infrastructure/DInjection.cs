@@ -80,6 +80,8 @@ namespace Blog.Infrastructure
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<ITagRepository, TagRepository>();
+            services.AddScoped<ICommentRepository, CommentRepository>();
 
             return services;
         }

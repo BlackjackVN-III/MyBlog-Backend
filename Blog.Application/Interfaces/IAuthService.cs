@@ -11,5 +11,7 @@ namespace Blog.Application.Interfaces
     {
         Task<AuthResultDto> RegisterAsync(RegisterRequestDto dto);
         Task<AuthResultDto> LoginAsync(LoginRequestDto dto);
+        Task<AuthResultDto> RefreshTokenAsync(RefreshTokenRequestDto dto);
+        Task<bool> LogoutAsync(Guid userId);
     }
 }

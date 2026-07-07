@@ -29,6 +29,15 @@ namespace Blog.Application.Commands.Post.CreateBlog
             blog.Id = Guid.NewGuid();
             blog.UserId = _currentUserService.UserId
                 ?? throw new UnauthorizedAccessException("Người dùng chưa đăng nhập.");
+
+            if (blog.PostTags != null)
+            {
+                foreach (var pt in blog.PostTags)
+                {
+                    pt.PostId = blog.Id;
+                }
+            }
+
             await _postRepository.CreateBlogAsync(blog);
             await _context.SaveChangesAsync(cancellationToken);
             return blog.Id;

@@ -13,5 +13,7 @@ namespace Blog.Application.Interfaces
         Guid? UserId { get; }
 
         string? UserName { get; }
+
+        bool IsInRole(string role);
     }
 }

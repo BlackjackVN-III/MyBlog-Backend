@@ -35,5 +35,11 @@ namespace Blog.Infrastructure.Service
 
         public string? UserName =>
             _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.GivenName)?.Value;
+
+        public bool IsInRole(string role)
+        {
+          return   _httpContextAccessor.HttpContext?.User?.IsInRole(role) ?? false;
+        }
+
     }
 }

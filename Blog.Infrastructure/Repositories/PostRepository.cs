@@ -42,17 +42,27 @@ namespace Blog.Infrastructure.Repositories
 
         public async Task<List<BlogPost>> GetAllPostsAsync()
         {
-            return await _context.Blogs.Include(x => x.Author).ToListAsync();
+            return await _context.Blogs
+                .Include(x => x.Author)
+                .Include(x => x.PostTags)
+                    .ThenInclude(pt => pt.Tag)
+                .ToListAsync();
         }
 
         public async Task<BlogPost?> GetBlogByIdAsync(Guid id)
         {
-            return await _context.Blogs.Include(x => x.Author).FirstOrDefaultAsync(x => x.Id == id);
+            return await _context.Blogs
+                .Include(x => x.Author)
+                .Include(x => x.PostTags)
+                    .ThenInclude(pt => pt.Tag)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<BlogPost?> UpdateBlogPostAsync(BlogPost blogPost, Guid id)
         {
-           var updateBlog = await GetBlogByIdAsync(id);
+            var updateBlog = await _context.Blogs
+                .Include(x => x.PostTags)
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (updateBlog == null)
             {
                 throw new Exception("Blog post not found");
@@ -62,6 +72,14 @@ namespace Blog.Infrastructure.Repositories
             updateBlog.Summary = blogPost.Summary;
             updateBlog.Content = blogPost.Content;
             updateBlog.UpdateOn = DateTime.Now;
+
+            // Cập nhật Many-to-Many PostTags
+            updateBlog.PostTags.Clear();
+            foreach (var pt in blogPost.PostTags)
+            {
+                pt.PostId = id;
+                updateBlog.PostTags.Add(pt);
+            }
 
             return updateBlog;
         }

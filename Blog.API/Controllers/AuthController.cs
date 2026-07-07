@@ -1,7 +1,10 @@
 using Blog.Application.Commands.Auth.Login;
+using Blog.Application.Commands.Auth.Logout;
+using Blog.Application.Commands.Auth.RefreshToken;
 using Blog.Application.Commands.Auth.Register;
 using Blog.Application.DTOs.Auth;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Blog.API.Controllers
@@ -28,6 +31,20 @@ namespace Blog.API.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
         {
             var result = await _sender.Send(new LoginCommand(dto));
+            return Ok(result);
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var result = await _sender.Send(new LogoutCommand());
+            return Ok(result);
+        }
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto dto)
+        {
+            var result = await _sender.Send(new RefreshTokenCommand(dto));
             return Ok(result);
         }
     }

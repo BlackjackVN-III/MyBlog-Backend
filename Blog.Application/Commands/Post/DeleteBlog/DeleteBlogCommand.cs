@@ -1,23 +1,29 @@
-﻿using Blog.Application.Interfaces;
+using Blog.Application.Common;
+using Blog.Application.Interfaces;
 using MediatR;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Blog.Application.Commands.Post.DeleteBlog
 {
     public record DeleteBlogCommand(Guid id) : IRequest;
+
     public class DeleteBlogCommandHandler : IRequestHandler<DeleteBlogCommand>
     {
         private readonly IAppDbContext _context;
         private readonly IPostRepository _postRepository;
         private readonly ICurrentUserService _currentUserService;
-        public DeleteBlogCommandHandler(IAppDbContext context, IPostRepository postRepository, ICurrentUserService currentUserService)
+        private readonly ICacheService _cacheService;
+
+        public DeleteBlogCommandHandler(IAppDbContext context, IPostRepository postRepository, ICurrentUserService currentUserService, ICacheService cacheService)
         {
             _context = context;
             _postRepository = postRepository;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
         }
+
         public async Task Handle(DeleteBlogCommand request, CancellationToken cancellationToken)
         {
             var existedBlog = await _postRepository.GetBlogByIdAsync(request.id);
@@ -34,10 +40,8 @@ namespace Blog.Application.Commands.Post.DeleteBlog
 
             await _postRepository.DeleteBlogPostAsync(request.id);
             await _context.SaveChangesAsync(cancellationToken);
+
+            await _cacheService.RemoveAsync(CacheKey.AllBlogs);
         }
-
-
-
     }
 }
-

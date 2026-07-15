@@ -22,6 +22,9 @@ namespace Blog.Application.DTOs.Blog
 
         [Required(ErrorMessage = "Nội dung bài viết không được để trống.")]
         public string Content { get; set; } = string.Empty;
+        
+        [MaxLength(500, ErrorMessage = "Đường dẫn ảnh bìa không được vượt quá 500 ký tự.")]
+        public string? CoverImageUrl { get; set; }
 
         // Nhận danh sách ID của các Tag mà người dùng chọn khi tạo bài
         public List<Guid> TagIds { get; set; } = new List<Guid>();

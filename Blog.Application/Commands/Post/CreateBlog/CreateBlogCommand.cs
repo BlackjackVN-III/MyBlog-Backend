@@ -1,3 +1,4 @@
+using Blog.Application.Common;
 using Blog.Application.DTOs.Blog;
 using Blog.Application.Interfaces;
 using Blog.Application.Mappings;
@@ -15,12 +16,14 @@ namespace Blog.Application.Commands.Post.CreateBlog
         private readonly IPostRepository _postRepository;
         private readonly IAppDbContext _context;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
 
-        public CreateBlogCommandHandler(IPostRepository postRepository, IAppDbContext context, ICurrentUserService currentUserService)
+        public CreateBlogCommandHandler(IPostRepository postRepository, IAppDbContext context, ICurrentUserService currentUserService, ICacheService cacheService)
         {
             _postRepository = postRepository;
             _context = context;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
         }
 
         public async Task<Guid> Handle(CreateBlogCommand request, CancellationToken cancellationToken)
@@ -37,9 +40,11 @@ namespace Blog.Application.Commands.Post.CreateBlog
                     pt.PostId = blog.Id;
                 }
             }
-
             await _postRepository.CreateBlogAsync(blog);
             await _context.SaveChangesAsync(cancellationToken);
+
+            await _cacheService.RemoveAsync(CacheKey.AllBlogs);
+
             return blog.Id;
         }
     }

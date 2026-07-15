@@ -8,10 +8,12 @@ namespace Blog.Application.Commands.Auth.Logout
     {
         private readonly IAuthService _authService;
         private readonly ICurrentUserService _currentUserService;
-        public LogoutCommandHandler(IAuthService authService, ICurrentUserService currentUserService)
+        private readonly ICacheService _cacheService;
+        public LogoutCommandHandler(IAuthService authService, ICurrentUserService currentUserService, ICacheService cacheService)
         {
             _authService = authService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
         }
         public async Task<bool> Handle(LogoutCommand request, CancellationToken cancellationToken)
         {
@@ -20,7 +22,20 @@ namespace Blog.Application.Commands.Auth.Logout
             {
                 return false;
             }
-            return await _authService.LogoutAsync(userId.Value);
+            // Vô hiệu hóa Refresh Token dưới DB
+            var success = await _authService.LogoutAsync(userId.Value);
+            if (!success)
+            {
+                return false;
+            }
+            // Đưa Access Token hiện tại vào Blacklist của Redis
+            var token = _currentUserService.Token;
+            if (!string.IsNullOrEmpty(token))
+            {
+                var blacklistKey = $"blacklist:{token}";
+                await _cacheService.SetAsync(blacklistKey, "revoked", TimeSpan.FromMinutes(60));
+            }
+            return true;
         }
     }
 }

@@ -11,9 +11,8 @@ namespace Blog.Application.Interfaces
         /// Id của Domain User đang đăng nhập. Null nếu chưa đăng nhập.
         /// </summary>
         Guid? UserId { get; }
-
         string? UserName { get; }
-
         bool IsInRole(string role);
+        string? Token { get; } 
     }
 }

@@ -1,7 +1,8 @@
-﻿using Blog.Application.Commands.Post.CreateBlog;
+using Blog.Application.Commands.Post.CreateBlog;
 using Blog.Application.Commands.Post.DeleteBlog;
 using Blog.Application.Commands.Post.UpdateBlog;
 using Blog.Application.DTOs.Blog;
+using Blog.Application.Queries;
 using Blog.Application.Queries.GetBlog;
 using Blog.Application.Queries.GetBlogById;
 using MediatR;
@@ -21,9 +22,9 @@ namespace Blog.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] QueryObject query)
         {
-            var result = await _sender.Send(new GetAllBlogsQuery());
+            var result = await _sender.Send(new GetAllBlogsQuery(query));
             return Ok(result);
         }
 

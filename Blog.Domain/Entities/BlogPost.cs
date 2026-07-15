@@ -16,6 +16,7 @@ namespace Blog.Domain.Entities
         public DateTime? UpdateOn { get; set; }
         public Guid UserId { get; set; }
         public User Author { get; set; } = null!;
+        public string? CoverImageUrl { get; set; }
 
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public ICollection<PostTag> PostTags { get; set; } = new List<PostTag>();

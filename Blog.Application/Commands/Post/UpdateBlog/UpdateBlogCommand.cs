@@ -1,4 +1,5 @@
-﻿using Blog.Application.DTOs.Blog;
+using Blog.Application.Common;
+using Blog.Application.DTOs.Blog;
 using Blog.Application.Interfaces;
 using Blog.Application.Mappings;
 using MediatR;
@@ -12,12 +13,14 @@ namespace Blog.Application.Commands.Post.UpdateBlog
         private readonly IAppDbContext _context;
         private readonly IPostRepository _postRepository;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
 
-        public UpdateBlogCommandHandler(IAppDbContext appDbContext, IPostRepository postRepository,ICurrentUserService currentUserService)
+        public UpdateBlogCommandHandler(IAppDbContext appDbContext, IPostRepository postRepository, ICurrentUserService currentUserService, ICacheService cacheService)
         {
             _context = appDbContext;
             _postRepository = postRepository;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
         }
 
         public async Task<BlogDto> Handle(UpdateBlogCommand request, CancellationToken cancellationToken)
@@ -37,11 +40,13 @@ namespace Blog.Application.Commands.Post.UpdateBlog
             var blog = request.dto.toBlogFromUpdateDto();
             var result = await _postRepository.UpdateBlogPostAsync(blog, request.id);
             await _context.SaveChangesAsync(cancellationToken);
-            return result.toBlogDto();
 
+            await _cacheService.RemoveAsync(CacheKey.AllBlogs);
+
+            return result.toBlogDto();
         }
     }
-    }
+}
 
 
 

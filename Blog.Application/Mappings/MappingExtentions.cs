@@ -22,6 +22,7 @@ namespace Blog.Application.Mappings
                 Summary = blogPost.Summary,
                 Content = blogPost.Content,
                 CreatedAt = blogPost.CreateOn,
+                CoverImageUrl = blogPost.CoverImageUrl,
                 Author = blogPost.Author != null ? new UserDto
                 {
                     Id = blogPost.Author.Id,
@@ -44,6 +45,7 @@ namespace Blog.Application.Mappings
                 Slug = CreateModel.Slug,
                 Summary = CreateModel.Summary,
                 Content = CreateModel.Content,
+                CoverImageUrl = CreateModel.CoverImageUrl,
                 PostTags = CreateModel.TagIds != null
                     ? CreateModel.TagIds.Select(tagId => new PostTag { TagId = tagId }).ToList()
                     : new List<PostTag>()
@@ -58,6 +60,7 @@ namespace Blog.Application.Mappings
                 Slug = updateModel.Slug,
                 Summary = updateModel.Summary,
                 Content = updateModel.Content,
+                CoverImageUrl = updateModel.CoverImageUrl,
                 PostTags = updateModel.TagIds != null
                     ? updateModel.TagIds.Select(tagId => new PostTag { TagId = tagId }).ToList()
                     : new List<PostTag>()

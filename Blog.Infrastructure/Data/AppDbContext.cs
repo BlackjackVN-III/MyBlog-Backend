@@ -58,6 +58,7 @@ namespace Blog.Infrastructure.Data
                 entity.Property(p => p.Title).HasMaxLength(255).IsRequired();
                 entity.Property(p => p.Slug).HasMaxLength(255).IsRequired();
                 entity.Property(p => p.Summary).HasMaxLength(500);
+                entity.Property(p => p.CoverImageUrl).HasMaxLength(500);
 
                 entity.HasIndex(p => p.Slug).IsUnique(); // Bắt buộc: Đảm bảo URL không trùng lặp
             });

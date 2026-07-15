@@ -41,5 +41,18 @@ namespace Blog.Infrastructure.Service
           return   _httpContextAccessor.HttpContext?.User?.IsInRole(role) ?? false;
         }
 
+                public string? Token
+        {
+            get
+            {
+                var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
+                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+                // Cắt bỏ phần chữ "Bearer " để lấy chuỗi JWT thô
+                return authHeader.Substring("Bearer ".Length).Trim();
+            }
+        }
     }
 }

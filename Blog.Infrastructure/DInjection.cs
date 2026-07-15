@@ -1,13 +1,16 @@
 using Blog.Application.Interfaces;
+using Blog.Infrastructure.CloudinaryIntegration;
 using Blog.Infrastructure.Data;
 using Blog.Infrastructure.Identity;
 using Blog.Infrastructure.Repositories;
 using Blog.Infrastructure.Service;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -17,14 +20,14 @@ namespace Blog.Infrastructure
     {
         public static IServiceCollection AddInfrastructureDI(this IServiceCollection services, IConfiguration configuration)
         {
-            // ===== 1. DATABASE =====
+            // =====  DATABASE =====
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             // Đăng ký IAppDbContext để Handler có thể gọi SaveChangesAsync
             services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
-            // ===== 2. IDENTITY =====
+            // ===== IDENTITY =====
             // Cấu hình ASP.NET Identity: quản lý User, Role, Password rules
             services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
             {
@@ -35,7 +38,7 @@ namespace Blog.Infrastructure
                 options.Password.RequiredLength = 12;
             }).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
-            // ===== 3. JWT AUTHENTICATION =====
+            // =====  JWT AUTHENTICATION =====
             // Cấu hình middleware xác thực JWT Bearer
             // Khi client gửi request với Header "Authorization: Bearer eyJ...",
             // middleware sẽ tự động:
@@ -52,29 +55,68 @@ namespace Blog.Infrastructure
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    // Kiểm tra xem ai phát hành token (phải khớp với Issuer trong appsettings)
+                {         
                     ValidateIssuer = true,
-                    ValidIssuer = configuration["JWT:Issuer"],
-
-                    // Kiểm tra token dành cho ai (phải khớp với Audience trong appsettings)
+                    ValidIssuer = configuration["JWT:Issuer"],            
                     ValidateAudience = true,
-                    ValidAudience = configuration["JWT:Audience"],
-
-                    // Kiểm tra chữ ký (quan trọng nhất - đảm bảo token không bị giả mạo)
+                    ValidAudience = configuration["JWT:Audience"],               
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(configuration["JWT:SigningKey"]!)),
-
-                    // Kiểm tra thời hạn token
                     ValidateLifetime = true,
-
-                    // Không cho phép lệch giờ (token hết hạn là hết, không có thời gian gia hạn)
                     ClockSkew = TimeSpan.Zero
                 };
+
+                 options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        try
+                        {
+                            // Lấy ICacheService từ DI Container của Request
+                            var cacheService = context.HttpContext.RequestServices.GetRequiredService<ICacheService>();
+                            
+                            // Lấy chuỗi JWT thô từ Request Header
+                            var token = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "").Trim();
+                            
+                            // Truy vấn nhanh Redis xem token này có nằm trong danh sách đen không
+                            var isBlacklisted = await cacheService.GetAsync<string>($"blacklist:{token}");
+                            if (isBlacklisted != null)
+                            {
+                                // Từ chối quyền truy cập ngay lập tức
+                                context.Fail("Token đã bị thu hồi do người dùng đã đăng xuất.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Tránh việc lỗi kết nối Redis làm hỏng luồng Authentication
+                            Console.WriteLine($"[Auth Redis Error] Check blacklist failed: {ex.Message}");
+                        }
+                    }
+                };
+
+            });
+            // ========  Redis ==============
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = configuration.GetConnectionString("RedisConnection");
+                options.InstanceName = "MyBlog_";
             });
 
-            // ===== 4. DEPENDENCY INJECTION =====
+            // ======== Cloudinary ============
+            services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
+
+            
+            services.AddSingleton(sp =>
+            {
+                var settings = sp.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+                var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+                return new Cloudinary(account);
+            });
+
+
+            // =====  DEPENDENCY INJECTION =====
             services.AddHttpContextAccessor();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<ITokenService, TokenService>();
@@ -82,7 +124,8 @@ namespace Blog.Infrastructure
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<ITagRepository, TagRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
-
+            services.AddScoped<ICacheService, RedisCacheService>();
+            services.AddScoped<IFileService, CloudinaryFileService>();
             return services;
         }
     }

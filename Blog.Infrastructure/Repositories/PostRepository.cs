@@ -1,6 +1,7 @@
 using Blog.Application.DTOs.Blog;
 using Blog.Application.Interfaces;
 using Blog.Application.Mappings;
+using Blog.Application.Queries;
 using Blog.Domain.Entities;
 using Blog.Infrastructure.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -40,13 +41,46 @@ namespace Blog.Infrastructure.Repositories
             
         }
 
-        public async Task<List<BlogPost>> GetAllPostsAsync()
+        public async Task<List<BlogPost>> GetAllPostsAsync(QueryObject query)
         {
-            return await _context.Blogs
+            var posts = _context.Blogs
                 .Include(x => x.Author)
                 .Include(x => x.PostTags)
                     .ThenInclude(pt => pt.Tag)
-                .ToListAsync();
+                .AsQueryable();
+
+            // 1. Tìm kiếm theo Tiêu đề hoặc Nội dung
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                posts = posts.Where(p => p.Title.Contains(query.Search) || p.Content.Contains(query.Search));
+            }
+
+            // 2. Lọc theo Tag Slug
+            if (!string.IsNullOrWhiteSpace(query.TagSlug))
+            {
+                posts = posts.Where(p => p.PostTags.Any(pt => pt.Tag.Slug == query.TagSlug));
+            }
+
+            // 3. Sắp xếp (Sorting)
+            if (!string.IsNullOrWhiteSpace(query.SortBy))
+            {
+                if (query.SortBy.Equals("Title", StringComparison.OrdinalIgnoreCase))
+                {
+                    posts = query.isDecsending 
+                        ? posts.OrderByDescending(p => p.Title) 
+                        : posts.OrderBy(p => p.Title);
+                }
+            }
+            else
+            {
+                // Mặc định luôn sắp xếp bài viết mới nhất lên trước
+                posts = posts.OrderByDescending(p => p.CreateOn);
+            }
+
+            // 4. Phân trang (Pagination)
+            var skipNumber = (query.PageNumber - 1) * query.PageSize;
+
+            return await posts.Skip(skipNumber).Take(query.PageSize).ToListAsync();
         }
 
         public async Task<BlogPost?> GetBlogByIdAsync(Guid id)
@@ -72,6 +106,7 @@ namespace Blog.Infrastructure.Repositories
             updateBlog.Summary = blogPost.Summary;
             updateBlog.Content = blogPost.Content;
             updateBlog.UpdateOn = DateTime.Now;
+            updateBlog.CoverImageUrl = blogPost.CoverImageUrl;
 
             // Cập nhật Many-to-Many PostTags
             updateBlog.PostTags.Clear();

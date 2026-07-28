@@ -186,5 +186,16 @@ namespace Blog.Infrastructure.Service
             return result.Succeeded;
         }
 
+        public async Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword)
+        {
+            var appUser = await _userManager.FindByIdAsync(userId.ToString());
+            if (appUser == null)
+            {
+                return false;
+            }
+
+            var result = await _userManager.ChangePasswordAsync(appUser, currentPassword, newPassword);
+            return result.Succeeded;
+        }
     }
 }

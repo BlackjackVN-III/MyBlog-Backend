@@ -1,5 +1,6 @@
 
 using Blog.API.OpenAPI;
+using Blog.Infrastructure.Hubs;
 using Blog.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Scalar.AspNetCore;
@@ -24,6 +25,9 @@ namespace Blog.API
             });
 
             builder.Services.AddAppDI(builder.Configuration);
+
+            builder.Services.AddSignalR();
+
 
             var app = builder.Build();
 
@@ -59,7 +63,7 @@ namespace Blog.API
             
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.MapHub<NotificationHub>("/hubs/notification");
 
             app.MapControllers();
 

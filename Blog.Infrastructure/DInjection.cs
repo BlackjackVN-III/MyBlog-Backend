@@ -124,8 +124,10 @@ namespace Blog.Infrastructure
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<ITagRepository, TagRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<IFileService, CloudinaryFileService>();
+            services.AddScoped<INotificationService, NotificationService>();
             return services;
         }
     }

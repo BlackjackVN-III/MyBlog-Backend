@@ -13,5 +13,6 @@ namespace Blog.Application.Interfaces
         Task<AuthResultDto> LoginAsync(LoginRequestDto dto);
         Task<AuthResultDto> RefreshTokenAsync(RefreshTokenRequestDto dto);
         Task<bool> LogoutAsync(Guid userId);
+        Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword);
     }
 }

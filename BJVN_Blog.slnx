@@ -5,4 +5,8 @@
     <Project Path="Blog.Domain/Blog.Domain.csproj" />
     <Project Path="Blog.Infrastructure/Blog.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/test/">
+    <Project Path="Blog.API.Tests/Blog.API.Tests.csproj" Id="cf5efd21-8b26-4948-850f-c00b4cd8a161" />
+    <Project Path="Blog.Application.Tests/Blog.Application.Tests.csproj" Id="1c806f11-a4c7-4a5d-bd4e-7288f194652c" />
+  </Folder>
 </Solution>

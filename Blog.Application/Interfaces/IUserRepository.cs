@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using Blog.Domain.Entities;
+using System;
+using System.Threading.Tasks;
 
 namespace Blog.Application.Interfaces
 {
     public interface IUserRepository
     {
+        Task<User?> GetByIdAsync(Guid id);
+        Task UpdateUserAsync(User user);
     }
 }

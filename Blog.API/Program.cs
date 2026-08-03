@@ -68,7 +68,10 @@ namespace Blog.API
                 app.MapScalarApiReference();
             }
 
-            app.UseHttpsRedirection();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
 
             // THỨ TỰ RẤT QUAN TRỌNG:
             // 1. UseAuthentication() - Đọc JWT từ Header, xác thực, gắn User vào HttpContext

@@ -35,6 +35,8 @@ namespace Blog.API.Tests
                     { "JWT:SigningKey", "SuperSecretKeyForMyBlogJWT_2026_MustBeAtLeast64CharactersLongForSecurity!!" },
                     { "JWT:Issuer", "BJVN_Blog" },
                     { "JWT:Audience", "BJVN_Blog_Client" },
+                    { "JWT:TokenExpirationInMinutes", "60" },
+                    { "JWT:RefreshTokenExpirationInDays", "7" },
                     { "CloudinarySettings:CloudName", "test-cloud" },
                     { "CloudinarySettings:ApiKey", "test-api-key" },
                     { "CloudinarySettings:ApiSecret", "test-api-secret" }

@@ -1,5 +1,6 @@
 
 using Blog.API.OpenAPI;
+using Blog.Infrastructure.Data;
 using Blog.Infrastructure.Hubs;
 using Blog.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;

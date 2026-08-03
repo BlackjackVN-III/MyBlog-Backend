@@ -34,7 +34,7 @@ namespace Blog.API
             var app = builder.Build();
 
             // ===== RUN DATABASE MIGRATIONS =====
-            // Tự động chạy Migration để tạo bảng/cấu trúc DB nếu chưa có (rất quan trọng khi deploy lên Azure SQL trống)
+            // Tự động chạy Migration để tạo bảng/cấu trúc DB nếu chưa có ( deploy lên Azure SQL trống)
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();

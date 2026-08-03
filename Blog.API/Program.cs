@@ -38,7 +38,7 @@ namespace Blog.API
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                if (dbContext.Database.IsRelational())
+                if (dbContext.Database.ProviderName == "Microsoft.EntityFrameworkCore.SqlServer")
                 {
                     await dbContext.Database.MigrateAsync();
                 }

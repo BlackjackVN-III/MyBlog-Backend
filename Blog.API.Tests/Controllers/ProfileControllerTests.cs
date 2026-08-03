@@ -84,6 +84,13 @@ namespace Blog.API.Tests.Controllers
             }
             // 2. Act: Gọi API xem profile cá nhân
             var response = await _client.GetAsync("/api/profile");
+
+            if (response.StatusCode == HttpStatusCode.InternalServerError)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Integration test failed. Server returned 500. Details: {errorContent}");
+            }
+
             // 3. Assert: Kiểm tra dữ liệu HTTP phản hồi
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 

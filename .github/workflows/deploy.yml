@@ -3,7 +3,7 @@ name: Build and Deploy to Azure Web App
 on:
   push:
     branches:
-      - main # Chạy tự động khi bạn push code lên nhánh main
+      - master # Chạy tự động khi bạn push code lên nhánh master
 
 jobs:
   # ----------------------------------------------------

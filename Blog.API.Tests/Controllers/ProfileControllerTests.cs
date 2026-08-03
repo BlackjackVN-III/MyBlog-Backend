@@ -1,4 +1,4 @@
-﻿using Blog.Application.DTOs.User;
+using Blog.Application.DTOs.User;
 using Blog.Domain.Entities;
 using Blog.Infrastructure.Data;
 using Blog.Infrastructure.Identity;
@@ -29,6 +29,13 @@ namespace Blog.API.Tests.Controllers
         {
             // Act: Gọi API xem profile nhưng không đính kèm JWT Token
             var response = await _client.GetAsync("/api/profile");
+
+            if (response.StatusCode == HttpStatusCode.InternalServerError)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Integration test failed. Server returned 500. Details: {errorContent}");
+            }
+
             // Assert: Hệ thống phải tự động trả về lỗi 401 Unauthorized
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }

@@ -1,0 +1,62 @@
+name: Build and Deploy to Azure Web App
+
+on:
+  push:
+    branches:
+      - main # Chạy tự động khi bạn push code lên nhánh main
+
+jobs:
+  # ----------------------------------------------------
+  # Job 1: Chạy tự động toàn bộ Unit Test & Integration Test
+  # ----------------------------------------------------
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build Solution
+      run: dotnet build --no-restore -c Release
+
+    - name: Run Unit & Integration Tests
+      run: dotnet test --no-build -c Release
+
+  # ----------------------------------------------------
+  # Job 2: Build Docker Image, Push lên ACR và Deploy lên Web App
+  # ----------------------------------------------------
+  build-and-deploy:
+    needs: run-tests # Chỉ chạy nếu toàn bộ test ở Job 1 đều Passed (xanh)
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Đăng nhập vào Azure Container Registry (ACR) bằng Credentials lấy từ Access Keys
+    - name: Log in to Azure Container Registry (ACR)
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ secrets.AZURE_REGISTRY_SERVER }}
+        username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+        password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+
+    # Build ảnh Docker từ file Dockerfile của API và đẩy lên ACR
+    - name: Build and Push Docker Image
+      run: |
+        docker build -f Blog.API/Dockerfile -t ${{ secrets.AZURE_REGISTRY_SERVER }}/myblog-api:latest .
+        docker push ${{ secrets.AZURE_REGISTRY_SERVER }}/myblog-api:latest
+
+    # Deploy ứng dụng trực tiếp lên Azure Web App sử dụng Publish Profile (an toàn và đơn giản nhất)
+    - name: Deploy to Azure Web App for Containers
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        images: '${{ secrets.AZURE_REGISTRY_SERVER }}/myblog-api:latest'

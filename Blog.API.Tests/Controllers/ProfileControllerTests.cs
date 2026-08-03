@@ -70,7 +70,7 @@ namespace Blog.API.Tests.Controllers
                 });
                 loginResponse.EnsureSuccessStatusCode();
 
-                var loginResult = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+                var loginResult = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();   
                 var token = loginResult.GetProperty("token").GetString();
                 // Gán JWT Token vào Header của client cho các request tiếp theo
                 _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);

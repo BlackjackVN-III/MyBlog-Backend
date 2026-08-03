@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------------------
+  # 1. Dịch vụ Database (SQL Server 2022)
+  # ----------------------------------------------------
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: myblog_db_server
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Cuong0911388389! # Mật khẩu sa
+    ports:
+      - "1433:1433" # Cổng SQL Server
+    volumes:
+      - mssql_data:/var/opt/mssql # Lưu trữ dữ liệu vật lý
+    networks:
+      - myblog_network
+
+  # ----------------------------------------------------
+  # 2. Dịch vụ Caching (Redis Server)
+  # ----------------------------------------------------
+  redis:
+    image: redis:7.0-alpine
+    container_name: myblog_redis_server
+    ports:
+      - "6379:6379"
+    networks:
+      - myblog_network
+
+  # ----------------------------------------------------
+  # 3. Dịch vụ Web API (Ứng dụng chính)
+  # ----------------------------------------------------
+  webapi:
+    image: myblog_web_api
+    build:
+      context: .
+      dockerfile: Blog.API/Dockerfile
+    container_name: myblog_api_app
+    ports:
+      - "5000:8080" # Map cổng 5000 máy thật vào 8080 container
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # Kết nối trực tiếp tới container mssql và redis
+      - ConnectionStrings__DefaultConnection=Server=mssql;Database=MyBlog;User Id=sa;Password=Cuong0911388389!;TrustServerCertificate=True;
+      - ConnectionStrings__RedisConnection=redis:6379
+      - CloudinarySettings__CloudName=jrhcynzk
+      - CloudinarySettings__ApiKey=914621714558433
+      - CloudinarySettings__ApiSecret=3DQbu1FuE4WuZAEpImM0NfzQSQk
+    depends_on:
+      - mssql
+      - redis
+    networks:
+      - myblog_network
+
+volumes:
+  mssql_data:
+
+networks:
+  myblog_network:
+    driver: bridge

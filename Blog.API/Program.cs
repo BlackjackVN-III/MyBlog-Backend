@@ -33,17 +33,6 @@ namespace Blog.API
 
             var app = builder.Build();
 
-            // ===== RUN DATABASE MIGRATIONS =====
-            // Tự động chạy Migration để tạo bảng/cấu trúc DB nếu chưa có ( deploy lên Azure SQL trống)
-            using (var scope = app.Services.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                if (dbContext.Database.ProviderName == "Microsoft.EntityFrameworkCore.SqlServer")
-                {
-                    await dbContext.Database.MigrateAsync();
-                }
-            }
-
             // ===== SEED ROLES =====
             // Tạo sẵn các Role mặc định trong DB khi ứng dụng khởi động.
             // Chỉ tạo nếu chưa tồn tại, không ảnh hưởng nếu đã có.
@@ -68,10 +57,7 @@ namespace Blog.API
                 app.MapScalarApiReference();
             }
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseHttpsRedirection();
-            }
+            app.UseHttpsRedirection();
 
             // THỨ TỰ RẤT QUAN TRỌNG:
             // 1. UseAuthentication() - Đọc JWT từ Header, xác thực, gắn User vào HttpContext

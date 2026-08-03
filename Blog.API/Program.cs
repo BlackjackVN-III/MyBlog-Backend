@@ -3,6 +3,7 @@ using Blog.API.OpenAPI;
 using Blog.Infrastructure.Hubs;
 using Blog.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 namespace Blog.API
@@ -30,6 +31,17 @@ namespace Blog.API
 
 
             var app = builder.Build();
+
+            // ===== RUN DATABASE MIGRATIONS =====
+            // Tự động chạy Migration để tạo bảng/cấu trúc DB nếu chưa có (rất quan trọng khi deploy lên Azure SQL trống)
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                if (dbContext.Database.IsRelational())
+                {
+                    await dbContext.Database.MigrateAsync();
+                }
+            }
 
             // ===== SEED ROLES =====
             // Tạo sẵn các Role mặc định trong DB khi ứng dụng khởi động.

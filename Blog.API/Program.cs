@@ -26,7 +26,21 @@ namespace Blog.API
                 options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
             });
 
-            builder.Services.AddAppDI(builder.Configuration);
+            // ===== CORS =====
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", policy =>
+                {
+                    var allowedOrigins = builder.Configuration
+                        .GetSection("AllowedOrigins")
+                        .Get<string[]>() ?? Array.Empty<string>();
+
+                    policy.WithOrigins(allowedOrigins)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
 
             builder.Services.AddSignalR();
 
@@ -59,9 +73,7 @@ namespace Blog.API
 
             app.UseHttpsRedirection();
 
-            // THỨ TỰ RẤT QUAN TRỌNG:
-            // 1. UseAuthentication() - Đọc JWT từ Header, xác thực, gắn User vào HttpContext
-            // 2. UseAuthorization()  - Kiểm tra xem User đã xác thực có quyền truy cập endpoint không
+            app.UseCors("CorsPolicy");
             
             app.UseAuthentication();
             app.UseAuthorization();

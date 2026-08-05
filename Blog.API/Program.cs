@@ -42,6 +42,8 @@ namespace Blog.API
                 });
             });
 
+            builder.Services.AddAppDI(builder.Configuration);
+
             builder.Services.AddSignalR();
 
 

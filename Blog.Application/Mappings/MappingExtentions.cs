@@ -26,7 +26,8 @@ namespace Blog.Application.Mappings
                 Author = blogPost.Author != null ? new UserDto
                 {
                     Id = blogPost.Author.Id,
-                    Username = blogPost.Author.Username
+                    Username = blogPost.Author.Username,
+                    AvatarUrl = blogPost.Author.AvatarUrl
                 } : null,
                 Tags = blogPost.PostTags != null
                     ? blogPost.PostTags
@@ -98,7 +99,8 @@ namespace Blog.Application.Mappings
                 User = comment.Author != null ? new UserDto
                 {
                     Id = comment.Author.Id,
-                    Username = comment.Author.Username
+                    Username = comment.Author.Username,
+                    AvatarUrl = comment.Author.AvatarUrl
                 } : null!
             };
         }

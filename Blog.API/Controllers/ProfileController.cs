@@ -8,6 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace Blog.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [EnableRateLimiting("interactive-policy")]
     public class ProfileController : ControllerBase
     {
         private readonly ISender _sender;

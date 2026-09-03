@@ -2,6 +2,7 @@ using Blog.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace Blog.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("interactive-policy")]
     public class UploadController : ControllerBase
     {
         private readonly IFileService _fileService;

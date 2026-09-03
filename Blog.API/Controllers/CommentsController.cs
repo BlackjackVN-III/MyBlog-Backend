@@ -5,6 +5,7 @@ using Blog.Application.Queries.Comment.GetCommentsByPost;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System;
 using System.Threading.Tasks;
 
@@ -12,6 +13,7 @@ namespace Blog.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("interactive-policy")]
     public class CommentsController : ControllerBase
     {
         private readonly ISender _sender;

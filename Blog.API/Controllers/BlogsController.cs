@@ -8,11 +8,13 @@ using Blog.Application.Queries.GetBlogById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Blog.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("general-policy")]
     public class BlogsController : ControllerBase
     {
         public readonly ISender _sender;
@@ -37,6 +39,7 @@ namespace Blog.API.Controllers
 
         [Authorize] 
         [HttpPost]
+        [EnableRateLimiting("interactive-policy")]
         public async Task<IActionResult> Create([FromBody] CreateBlogRequestDto dto)
         {
 
@@ -46,6 +49,7 @@ namespace Blog.API.Controllers
 
         [Authorize] 
         [HttpPut("{id}")]
+        [EnableRateLimiting("interactive-policy")]
         public async Task<IActionResult> UpdateBlog([FromBody] UpdateBlogRequestDto updateDto, [FromRoute] Guid id)
         {
             var result = await _sender.Send(new UpdateBlogCommand(updateDto, id));
@@ -53,6 +57,7 @@ namespace Blog.API.Controllers
         }
         [Authorize] 
         [HttpDelete("{id}")]
+        [EnableRateLimiting("interactive-policy")]
         public async Task<IActionResult> DeleteBlog([FromRoute] Guid id)
         {
             await _sender.Send(new DeleteBlogCommand(id));

@@ -6,11 +6,13 @@ using Blog.Application.DTOs.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Blog.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("auth-policy")]
     public class AuthController : ControllerBase
     {
         private readonly ISender _sender;

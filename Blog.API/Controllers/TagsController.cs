@@ -7,11 +7,13 @@ using Blog.Application.Queries.Tag.GetTagById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Blog.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("general-policy")]
     public class TagsController : ControllerBase
     {
         private readonly ISender _sender;
@@ -37,6 +39,7 @@ namespace Blog.API.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
+        [EnableRateLimiting("interactive-policy")]
         public async Task<IActionResult> Create([FromBody] CreateTagRequestDto dto)
         {
             var result = await _sender.Send(new CreateTagCommand(dto));
@@ -45,6 +48,7 @@ namespace Blog.API.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
+        [EnableRateLimiting("interactive-policy")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] CreateTagRequestDto dto)
         {
             var result = await _sender.Send(new UpdateTagCommand(id, dto));
@@ -53,6 +57,7 @@ namespace Blog.API.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
+        [EnableRateLimiting("interactive-policy")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var success = await _sender.Send(new DeleteTagCommand(id));
